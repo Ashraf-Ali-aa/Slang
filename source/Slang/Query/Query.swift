@@ -31,6 +31,7 @@ extension Query {
 
 /// It's a query… but it's also a collection! Get it? 😯
 public protocol Quellection: Collection where Element == Self, Index == Int, SubSequence == Self {
+    associatedtype Index = Int
     associatedtype Context: Hashable, FileSlice
 
     init<S: Sequence>(_ disassembly: Disassembly, _ selection: S) where S.Element == Context

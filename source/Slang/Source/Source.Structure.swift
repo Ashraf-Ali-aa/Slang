@@ -26,10 +26,60 @@ extension Structure {
     public var kind: SourceKind! { unwrap(self[.kind] as? String, { SourceKind(rawValue: $0) }) }
 
     public var name: String! { self[.name] as? String }
+
+    public var inheritedType: [String] {
+        guard let inheritedType = primitive[.inheritedtypes] as? [[String: SourceKitRepresentable]] else {
+            return []
+        }
+
+        return inheritedType.compactMap { (unwrap($0[.name] as? String) { $0 }) }
+    }
+
     public var nameRange: Range<Int>! { unwrap(self[.nameOffset] as? Int64, self[.nameLength] as? Int64, { Int($0) ..< Int($0 + $1) }) }
 
     public var body: String { self.file[self.bodyRange] }
+
+    public var bodyCollection: [String] { return body.convertToArray }
+
     public var bodyRange: Range<Int>! { unwrap(self[.bodyOffset] as? Int64, self[.bodyLength] as? Int64, { Int($0) ..< Int($0 + $1) }) }
+}
+
+extension Structure {
+    public func conformsTo(class value: String) -> Bool {
+        return kind == .decl(.class) && inheritedType.contains(value)
+    }
+
+    public func functionName(startsWith value: String) -> Bool {
+        guard let name = self.name else {
+            return false
+        }
+
+        return kind == .decl(.function(.method(.instance))) && name.hasPrefix(value)
+    }
+
+    public func functionName(contains value: String) -> Bool {
+        guard let name = self.name else {
+            return false
+        }
+
+        return kind == .decl(.function(.method(.instance))) && name.contains(value)
+    }
+
+    public func closureName(contains value: String) -> Bool {
+        guard let name = self.name else {
+            return false
+        }
+
+        return kind == .expr(.call) && name.contains(value)
+    }
+
+    public func argumentName(contains value: String) -> Bool {
+        guard let name = self.name else {
+            return false
+        }
+
+        return kind == .expr(.arg) && name.contains(value)
+    }
 }
 
 extension Structure: Hashable {

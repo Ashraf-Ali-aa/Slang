@@ -13,7 +13,11 @@ internal func shell(_ command: String) throws -> String {
     process.standardOutput = pipe
     process.standardError = pipe
     try process.run()
-    return String(decoding: try pipe.fileHandleForReading.readToEnd() ?? Data(), as: UTF8.self)
+    if #available(macOS 10.15.4, *) {
+        return String(decoding: try pipe.fileHandleForReading.readToEnd() ?? Data(), as: UTF8.self)
+    } else {
+        return String(decoding: pipe.fileHandleForReading.availableData , as: UTF8.self)
+    }
 }
 
 /// Runs the shell command and returns the entire stdout + stderr output truncated on the end.

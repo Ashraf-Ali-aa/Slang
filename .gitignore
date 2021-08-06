@@ -21,3 +21,7 @@
 
 # SPM
 /.build
+.swiftpm/
+
+# Others
+.DS_Store
